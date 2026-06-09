@@ -1,0 +1,41 @@
+{
+  "name": "abyss",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ABYSS — premium clothing brand (Shirts, Hoodies, Tops). Next.js fullstack with DDD + DTO + MVC layered architecture.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "5.17.0",
+    "bootstrap": "5.3.3",
+    "framer-motion": "11.3.19",
+    "lucide-react": "0.424.0",
+    "next": "14.2.5",
+    "react": "18.3.1",
+    "react-bootstrap": "2.10.4",
+    "react-dom": "18.3.1",
+    "zustand": "4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.13",
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "eslint": "8.57.0",
+    "eslint-config-next": "14.2.5",
+    "prisma": "5.17.0",
+    "sass": "1.77.8",
+    "tsx": "4.16.2",
+    "typescript": "5.5.4"
+  }
+}

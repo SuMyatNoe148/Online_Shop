@@ -1,0 +1,82 @@
+// ABYSS — Prisma schema (MySQL / XAMPP).
+// Run:  npm run db:push  &&  npm run db:seed   then set DATA_SOURCE="prisma" in .env
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Category {
+  SHIRT
+  HOODIE
+  TOP
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String   @db.Text
+  category    Category
+  price       Int // stored in minor units (cents)
+  currency    String   @default("USD")
+  images      Json // string[]
+  sizes       Json // string[]
+  colors      Json // string[]
+  stock       Int      @default(0)
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orderItems OrderItem[]
+}
+
+model Model {
+  id        String   @id @default(cuid())
+  name      String
+  role      String
+  bio       String   @db.Text
+  photo     String
+  instagram String?
+  featured  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  customerName String
+  email        String
+  address      String      @db.Text
+  total        Int
+  currency     String      @default("USD")
+  status       OrderStatus @default(PENDING)
+  createdAt    DateTime    @default(now())
+
+  items OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  name      String
+  size      String
+  color     String
+  quantity  Int
+  unitPrice Int
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+}
