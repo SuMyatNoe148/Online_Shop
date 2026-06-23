@@ -12,8 +12,12 @@ export const ProductController = {
     category?: string | null;
     featured?: string | null;
     search?: string | null;
+    sort?: string | null;
   }) {
     const { productService } = getServices();
+    const validSorts = ["created_at_desc","price_asc","price_desc","name_asc"] as const;
+    type S = typeof validSorts[number];
+    const sort = validSorts.includes(params.sort as S) ? (params.sort as S) : undefined;
     return productService.list({
       category:
         params.category && isCategory(params.category)
@@ -22,6 +26,7 @@ export const ProductController = {
       featured:
         params.featured == null ? undefined : params.featured === "true",
       search: params.search || undefined,
+      sort,
     });
   },
 

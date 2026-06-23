@@ -3,12 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Trash2, CheckCircle2 } from "lucide-react";
+import toast from "react-hot-toast";
 import {
   useCart,
   cartKey,
   selectSubtotal,
 } from "@/store/cartStore";
 import { formatMoney } from "@/lib/format";
+import { phpApi } from "@/lib/phpApi";
 
 export default function CartPage() {
   const { items, remove, setQuantity, clear } = useCart();
@@ -31,27 +33,23 @@ export default function CartPage() {
     setStatus("loading");
     setMessage("");
     try {
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          items: items.map((i) => ({
-            productId: i.productId,
-            size: i.size,
-            color: i.color,
-            quantity: i.quantity,
-          })),
-        }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Checkout failed");
-      setOrderId(json.data.id);
+      const order = await phpApi.createOrder({
+        ...form,
+        items: items.map((i) => ({
+          productId: i.productId,
+          size: i.size,
+          color: i.color,
+          quantity: i.quantity,
+        })),
+      }) as { id: string };
+      setOrderId(order.id);
       setStatus("done");
       clear();
     } catch (err) {
+      const msg = (err as Error).message;
       setStatus("error");
-      setMessage((err as Error).message);
+      setMessage(msg);
+      toast.error(msg);
     }
   };
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ShoppingBag, Check } from "lucide-react";
+import toast from "react-hot-toast";
 import { ProductDTO } from "@/application/dto/ProductDTO";
 import { useCart } from "@/store/cartStore";
 
@@ -15,6 +16,7 @@ export default function AddToCart({ product }: { product: ProductDTO }) {
     if (!size || !color) return;
     add(product, { size, color });
     setAdded(true);
+    toast.success(`${product.name} added to bag`);
     setTimeout(() => setAdded(false), 1600);
   };
 

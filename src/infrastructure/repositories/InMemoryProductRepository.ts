@@ -32,7 +32,12 @@ export class InMemoryProductRepository implements ProductRepository {
           p.description.toLowerCase().includes(q),
       );
     }
-    return items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    switch (query?.sort) {
+      case "price_asc":  return items.sort((a, b) => a.price - b.price);
+      case "price_desc": return items.sort((a, b) => b.price - a.price);
+      case "name_asc":   return items.sort((a, b) => a.name.localeCompare(b.name));
+      default:           return items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    }
   }
 
   async findBySlug(slug: string): Promise<Product | null> {

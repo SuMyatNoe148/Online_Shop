@@ -1,10 +1,13 @@
 import { Product } from "./Product";
 import { Category } from "../shared/Category";
 
+export type ProductSort = "created_at_desc" | "price_asc" | "price_desc" | "name_asc";
+
 export interface ProductQuery {
   category?: Category;
   featured?: boolean;
   search?: string;
+  sort?: ProductSort;
 }
 
 /**

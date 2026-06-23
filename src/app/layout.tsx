@@ -4,6 +4,7 @@ import Navbar from "@/presentation/components/ui/Navbar";
 import Footer from "@/presentation/components/ui/Footer";
 import CartDrawer from "@/presentation/components/ui/CartDrawer";
 import BrandLoader from "@/presentation/components/ui/BrandLoader";
+import ToasterProvider from "@/presentation/components/ui/ToasterProvider";
 
 export const metadata: Metadata = {
   title: {
@@ -45,6 +46,7 @@ export default function RootLayout({
         <main>{children}</main>
         <Footer />
         <CartDrawer />
+        <ToasterProvider />
       </body>
     </html>
   );

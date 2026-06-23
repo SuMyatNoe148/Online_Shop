@@ -1,8 +1,10 @@
 "use client";
 
 import { Fragment, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { OrderDTO } from "@/application/dto/OrderDTO";
 import { OrderStatus } from "@/domain/order/Order";
+import { phpApi } from "@/lib/phpApi";
 
 const STATUSES = Object.values(OrderStatus);
 
@@ -13,10 +15,14 @@ export default function AdminOrders() {
 
   const load = async () => {
     setLoading(true);
-    const res = await fetch("/api/orders");
-    const json = await res.json();
-    setOrders(json.data ?? []);
-    setLoading(false);
+    try {
+      const data = await phpApi.getOrders() as OrderDTO[];
+      setOrders(data);
+    } catch {
+      toast.error("Failed to load orders.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -24,12 +30,13 @@ export default function AdminOrders() {
   }, []);
 
   const updateStatus = async (id: string, status: string) => {
-    await fetch(`/api/orders/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    load();
+    try {
+      await phpApi.updateOrderStatus(id, status);
+      toast.success("Status updated.");
+      load();
+    } catch {
+      toast.error("Failed to update status.");
+    }
   };
 
   return (

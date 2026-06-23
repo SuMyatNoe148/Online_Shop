@@ -611,6 +611,80 @@ h4,
   border: 1px solid var(--ab-line-strong);
 }
 
+// Wishlist heart button on product card
+.ab-wishlist-btn {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  z-index: 2;
+  background: rgba(10, 10, 11, 0.72);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ab-gold);
+  transition: background 0.2s, transform 0.15s;
+  backdrop-filter: blur(4px);
+  &:hover {
+    background: rgba(10, 10, 11, 0.9);
+    transform: scale(1.12);
+  }
+}
+
+// Search overlay
+.ab-search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(10, 10, 11, 0.92);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 120px;
+}
+.ab-search-box {
+  width: min(680px, 90vw);
+}
+.ab-search-input {
+  width: 100%;
+  background: var(--ab-surface-2);
+  border: 1px solid var(--ab-line-strong);
+  border-radius: var(--ab-radius);
+  color: var(--ab-paper);
+  font-size: 1.4rem;
+  padding: 0.9rem 1.2rem;
+  outline: none;
+  font-family: var(--font-body);
+  &:focus { border-color: var(--ab-gold); }
+}
+
+// Skeleton loader
+@keyframes ab-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+.ab-skeleton {
+  background: linear-gradient(90deg, var(--ab-surface) 25%, var(--ab-surface-2) 50%, var(--ab-surface) 75%);
+  background-size: 800px 100%;
+  animation: ab-shimmer 1.4s infinite linear;
+  border-radius: var(--ab-radius-sm);
+}
+
+// Auth form card
+.ab-auth-card {
+  max-width: 440px;
+  margin: 0 auto;
+  background: var(--ab-surface);
+  border: 1px solid var(--ab-line);
+  border-radius: var(--ab-radius);
+  padding: 2.4rem;
+}
+
 @media (max-width: 860px) {
   .ab-nav__links {
     display: none;

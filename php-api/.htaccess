@@ -1,0 +1,7 @@
+Options -Indexes
+php_flag display_errors Off
+php_flag log_errors On
+
+Header always set Access-Control-Allow-Origin "*"
+Header always set Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
