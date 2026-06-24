@@ -1,14 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { Heart, ShoppingBag } from "lucide-react";
 import toast from "react-hot-toast";
 import { useWishlist } from "@/store/wishlistStore";
 import { useCart } from "@/store/cartStore";
-import { formatMoney } from "@/lib/format";
-
-export const metadata = { title: "Wishlist" };
 
 export default function WishlistPage() {
   const { ids, toggle } = useWishlist();
