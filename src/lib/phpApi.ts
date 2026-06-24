@@ -10,6 +10,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return json.data as T;
 }
 
+async function authRequest<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`/api/auth${path}`, {
+    ...init,
+    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error ?? 'API error');
+  return json.data as T;
+}
+
 export const phpApi = {
   // Products
   getProducts: (params?: Record<string, string>) => {
@@ -39,15 +49,15 @@ export const phpApi = {
     return request<object[]>(`/models.php${qs}`, { cache: 'no-store' });
   },
 
-  // Auth
+  // Auth — routed through the Next.js API so login works without XAMPP/PHP
   register: (body: { name: string; email: string; password: string }) =>
-    request<object>('/auth.php?action=register', { method: 'POST', body: JSON.stringify(body) }),
+    authRequest<object>('?action=register', { method: 'POST', body: JSON.stringify(body) }),
   login: (body: { email: string; password: string }) =>
-    request<object>('/auth.php?action=login', { method: 'POST', body: JSON.stringify(body) }),
+    authRequest<object>('?action=login', { method: 'POST', body: JSON.stringify(body) }),
   logout: () =>
-    request<object>('/auth.php?action=logout', { method: 'POST' }),
+    authRequest<object>('?action=logout', { method: 'POST' }),
   me: () =>
-    request<object | null>('/auth.php?action=me'),
+    authRequest<object | null>('?action=me'),
 
   // Wishlist
   getWishlist: () => request<object[]>('/wishlist.php', { cache: 'no-store' }),
