@@ -11,11 +11,13 @@ import {
 } from "@/store/cartStore";
 import { formatMoney } from "@/lib/format";
 import { phpApi } from "@/lib/phpApi";
+import { useAuth } from "@/store/authStore";
 
 export default function CartPage() {
   const { items, remove, setQuantity, clear } = useCart();
   const subtotal = useCart(selectSubtotal);
   const currency = items[0]?.currency ?? "USD";
+  const user = useAuth((s) => s.user);
 
   const [form, setForm] = useState({
     customerName: "",
@@ -147,6 +149,27 @@ export default function CartPage() {
                 </div>
                 <hr style={{ borderColor: "var(--ab-line)" }} />
 
+                {!user && (
+                  <div style={{
+                    background: "var(--ab-surface-2)",
+                    border: "1px solid var(--ab-gold)",
+                    borderRadius: "var(--ab-radius-sm)",
+                    padding: "1rem",
+                    marginBottom: "1rem",
+                    textAlign: "center",
+                  }}>
+                    <p style={{ marginBottom: "0.6rem", fontSize: "0.9rem" }}>
+                      Please sign in to place your order.
+                    </p>
+                    <Link href="/login" className="ab-btn ab-btn--gold" style={{ fontSize: "0.85rem", padding: "0.5rem 1.2rem" }}>
+                      Sign In
+                    </Link>
+                    <span className="ab-muted" style={{ display: "block", fontSize: "0.78rem", marginTop: "0.5rem" }}>
+                      No account? <Link href="/register" style={{ color: "var(--ab-gold)" }}>Register free</Link>
+                    </span>
+                  </div>
+                )}
+
                 <form onSubmit={submit} className="mt-3">
                   <div className="mb-3">
                     <label className="ab-label">Full Name</label>
@@ -190,7 +213,7 @@ export default function CartPage() {
 
                   <button
                     className="ab-btn ab-btn--gold ab-btn--block"
-                    disabled={status === "loading"}
+                    disabled={status === "loading" || !user}
                   >
                     {status === "loading"
                       ? "Placing Order…"

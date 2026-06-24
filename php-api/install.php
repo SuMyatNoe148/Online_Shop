@@ -7,19 +7,36 @@
 
 $host    = 'localhost';
 $user    = 'root';
-$pass    = '';
 $dbName  = 'abyss';
+
+// Try abyss_user first (created via create_user.sql), then root fallbacks
+$candidates = [['abyss_user','abyss2024'], ['root',''], ['root','root'], ['root','mysql'], ['root','1234'], ['root','password']];
 
 $errors = [];
 $steps  = [];
+$pdo    = null;
+$usedPass = null;
+
+foreach ($candidates as [$tryUser, $tryPass]) {
+    try {
+        $pdo = new PDO("mysql:host=$host;charset=utf8mb4", $tryUser, $tryPass, [
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        ]);
+        $usedPass = "$tryUser / $tryPass";
+        break;
+    } catch (PDOException $e) {
+        $pdo = null;
+    }
+}
+
+if (!$pdo) {
+    $errors[] = "❌ Could not connect with any common password. Please set your MySQL root password in php-api/config.php manually.";
+}
 
 try {
-    // Connect without selecting a DB first
-    $pdo = new PDO("mysql:host=$host;charset=utf8mb4", $user, $pass, [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    ]);
-    $steps[] = "✅ Connected to MySQL";
+    if (!$pdo) throw new PDOException("No connection");
+    $steps[] = "✅ Connected to MySQL" . ($usedPass !== '' ? " (password: '$usedPass')" : " (no password)");
 
     // Create database
     $pdo->exec("CREATE DATABASE IF NOT EXISTS `$dbName` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
@@ -152,9 +169,10 @@ try {
     foreach ($models as $m) $stmt2->execute($m);
     $steps[] = "✅ Models seeded (" . count($models) . " items)";
 
-    // Seed admin user (password: admin123)
+    // Seed admin user (password: admin123) — always update hash to ensure it's correct
     $hash = password_hash('admin123', PASSWORD_BCRYPT);
-    $pdo->prepare("INSERT IGNORE INTO users (id,name,email,password_hash,role) VALUES (?,?,?,?,?)")
+    $pdo->prepare("INSERT INTO users (id,name,email,password_hash,role) VALUES (?,?,?,?,?)
+        ON DUPLICATE KEY UPDATE password_hash=VALUES(password_hash), role='admin'")
         ->execute(['u-admin','ABYSS Admin','admin@abyss.com',$hash,'admin']);
     $steps[] = "✅ Admin user ready — email: admin@abyss.com / password: admin123";
 

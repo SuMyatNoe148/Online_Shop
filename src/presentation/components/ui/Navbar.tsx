@@ -25,10 +25,11 @@ export default function Navbar() {
   const user     = useAuth((s) => s.user);
   const logout   = useAuth((s) => s.logout);
 
-  const [solid,   setSolid]   = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const [search,  setSearch]  = useState(false);
-  const [query,   setQuery]   = useState("");
+  const [solid,    setSolid]   = useState(false);
+  const [mounted,  setMounted] = useState(false);
+  const [search,   setSearch]  = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [query,    setQuery]   = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -45,11 +46,17 @@ export default function Navbar() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setSearch(false);
+      if (e.key === "Escape") { setSearch(false); setMobileOpen(false); }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  useEffect(() => {
+    if (mobileOpen) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,9 +136,13 @@ export default function Navbar() {
               {mounted && count > 0 && <span className="ab-badge">{count}</span>}
             </button>
 
-            <Link href="/shop" className="ab-icon-btn d-md-none" aria-label="Menu">
+            <button
+              className="ab-icon-btn d-md-none"
+              aria-label="Menu"
+              onClick={() => setMobileOpen(true)}
+            >
               <Menu size={22} strokeWidth={1.6} />
-            </Link>
+            </button>
           </div>
         </div>
       </header>
@@ -163,6 +174,68 @@ export default function Navbar() {
             <p className="ab-muted mt-2" style={{ fontSize: "0.82rem" }}>
               Press Enter to search · Esc to close
             </p>
+          </div>
+        </div>
+      )}
+
+      {mobileOpen && (
+        <div
+          style={{
+            position: "fixed", inset: 0, zIndex: 200,
+            background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)",
+          }}
+          onClick={() => setMobileOpen(false)}
+        >
+          <div
+            style={{
+              position: "absolute", top: 0, right: 0, bottom: 0,
+              width: "min(320px, 85vw)",
+              background: "var(--ab-surface)",
+              borderLeft: "1px solid var(--ab-line-strong)",
+              padding: "2rem 1.6rem",
+              display: "flex", flexDirection: "column", gap: "0.2rem",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.6rem" }}>
+              <span style={{ fontFamily: "var(--font-display)", fontSize: "1.4rem", fontWeight: 700 }}>ABYSS</span>
+              <button className="ab-icon-btn" onClick={() => setMobileOpen(false)} aria-label="Close menu">
+                <X size={22} strokeWidth={1.6} />
+              </button>
+            </div>
+
+            {LINKS.map((l) => (
+              <Link
+                key={l.label}
+                href={l.href}
+                onClick={() => setMobileOpen(false)}
+                style={{
+                  padding: "0.9rem 0",
+                  borderBottom: "1px solid var(--ab-line)",
+                  fontSize: "1.05rem",
+                  fontFamily: "var(--font-display)",
+                  color: pathname === l.href ? "var(--ab-gold)" : "var(--ab-paper)",
+                }}
+              >
+                {l.label}
+              </Link>
+            ))}
+
+            <div style={{ marginTop: "auto", paddingTop: "1.6rem", display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+              {mounted && user ? (
+                <>
+                  <span className="ab-muted" style={{ fontSize: "0.85rem" }}>Signed in as {user.name}</span>
+                  <button className="ab-btn ab-btn--ghost" onClick={() => { handleLogout(); setMobileOpen(false); }}>
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link href="/login" className="ab-btn ab-btn--gold" onClick={() => setMobileOpen(false)}>Sign In</Link>
+                  <Link href="/register" className="ab-btn ab-btn--ghost" onClick={() => setMobileOpen(false)}>Register</Link>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}

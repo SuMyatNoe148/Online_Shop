@@ -1,8 +1,8 @@
 <?php
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'abyss');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_USER', 'abyss_user');
+define('DB_PASS', 'abyss2024');
 define('DB_CHARSET', 'utf8mb4');
 
 function get_pdo(): PDO {
