@@ -1,14 +1,17 @@
 import { ProductService } from "@/application/services/ProductService";
 import { ModelService } from "@/application/services/ModelService";
 import { OrderService } from "@/application/services/OrderService";
+import { AuthService } from "@/application/services/AuthService";
 
 import { ProductRepository } from "@/domain/product/ProductRepository";
 import { ModelRepository } from "@/domain/model/ModelRepository";
 import { OrderRepository } from "@/domain/order/OrderRepository";
+import { UserRepository } from "@/domain/user/UserRepository";
 
 import { InMemoryProductRepository } from "./repositories/InMemoryProductRepository";
 import { InMemoryModelRepository } from "./repositories/InMemoryModelRepository";
 import { InMemoryOrderRepository } from "./repositories/InMemoryOrderRepository";
+import { InMemoryUserRepository } from "./repositories/InMemoryUserRepository";
 
 /**
  * Composition root (Dependency Injection container).
@@ -21,6 +24,7 @@ interface Services {
   productService: ProductService;
   modelService: ModelService;
   orderService: OrderService;
+  authService: AuthService;
 }
 
 let cached: Services | null = null;
@@ -29,6 +33,7 @@ function buildRepositories(): {
   product: ProductRepository;
   model: ModelRepository;
   order: OrderRepository;
+  user: UserRepository;
 } {
   const usePrisma = process.env.DATA_SOURCE === "prisma";
 
@@ -48,6 +53,7 @@ function buildRepositories(): {
       product: new PrismaProductRepository(),
       model: new PrismaModelRepository(),
       order: new PrismaOrderRepository(),
+      user: new InMemoryUserRepository(),
     };
   }
 
@@ -55,6 +61,7 @@ function buildRepositories(): {
     product: new InMemoryProductRepository(),
     model: new InMemoryModelRepository(),
     order: new InMemoryOrderRepository(),
+    user: new InMemoryUserRepository(),
   };
 }
 
@@ -66,6 +73,7 @@ export function getServices(): Services {
     productService: new ProductService(repos.product),
     modelService: new ModelService(repos.model),
     orderService: new OrderService(repos.order, repos.product),
+    authService: new AuthService(repos.user),
   };
   return cached;
 }

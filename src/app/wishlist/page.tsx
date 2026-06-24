@@ -4,7 +4,8 @@ import Link from "next/link";
 import { Heart, ShoppingBag } from "lucide-react";
 import toast from "react-hot-toast";
 import { useWishlist } from "@/store/wishlistStore";
-import { useCart } from "@/store/cartStore";
+import { useCart, type CartItem } from "@/store/cartStore";
+import type { ProductDTO } from "@/application/dto/ProductDTO";
 
 export default function WishlistPage() {
   const { ids, toggle } = useWishlist();
@@ -58,7 +59,7 @@ function WishlistCard({
 }: {
   productId: string;
   toggle: (id: string) => void;
-  addToCart: ReturnType<typeof useCart>["add"];
+  addToCart: (product: ProductDTO, opts: { size: string; color: string; quantity?: number }) => void;
 }) {
   return (
     <div className="col-6 col-lg-3">
