@@ -9,14 +9,14 @@ $id     = $_GET['id'] ?? null;
 if ($method === 'GET') {
     $pdo = get_pdo();
     if ($id) {
-        $stmt = $pdo->prepare('SELECT * FROM orders WHERE id = ?');
+        $stmt = $pdo->prepare('SELECT * FROM v_orders_summary WHERE id = ?');
         $stmt->execute([$id]);
         $row = $stmt->fetch();
         if (!$row) json_error('Order not found.', 404);
         $row['items'] = json_decode($row['items'], true);
         json_response(['data' => $row]);
     }
-    $rows = $pdo->query('SELECT * FROM orders ORDER BY created_at DESC')->fetchAll();
+    $rows = $pdo->query('SELECT * FROM v_orders_summary ORDER BY created_at DESC')->fetchAll();
     foreach ($rows as &$r) $r['items'] = json_decode($r['items'], true);
     unset($r);
     json_response(['data' => $rows]);
@@ -37,7 +37,7 @@ if ($method === 'POST') {
     $total = 0;
     $currency = 'USD';
 
-    // Calculate total from DB prices (server-authoritative)
+    // Enrich items with server-authoritative unitPrice and calculate total
     foreach ($b['items'] as &$item) {
         if (empty($item['productId']) || empty($item['quantity'])) {
             json_error('Each item needs productId and quantity.');
@@ -47,26 +47,28 @@ if ($method === 'POST') {
         $product = $stmt->fetch();
         if (!$product) json_error("Product '{$item['productId']}' not found.", 404);
         $item['unitPrice'] = (int)$product['price'];
+        $item['name']      = $product['name'] ?? 'Unknown';
         $currency = $product['currency'];
         $total += $item['unitPrice'] * (int)$item['quantity'];
     }
     unset($item);
 
     $orderId = 'ord-' . bin2hex(random_bytes(8));
-    $stmt = $pdo->prepare(
-        'INSERT INTO orders (id, customer_name, email, address, items, total, currency, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-    );
+
+    $stmt = $pdo->prepare('CALL sp_create_order(?, ?, ?, ?, ?, ?)');
     $stmt->execute([
         $orderId,
         $b['customerName'],
         $b['email'],
         $b['address'],
         json_encode($b['items']),
-        $total,
         $currency,
-        'pending',
     ]);
+    $result = $stmt->fetch();
+
+    if (!$result || empty($result['success'])) {
+        json_error('Failed to create order.', 500);
+    }
 
     json_response(['data' => ['id' => $orderId, 'total' => $total, 'currency' => $currency]], 201);
 }
@@ -79,7 +81,10 @@ if ($method === 'PATCH') {
     $allowed = ['pending','processing','shipped','delivered','cancelled'];
     if (!in_array($status, $allowed)) json_error('Invalid status.');
     $pdo = get_pdo();
-    $pdo->prepare('UPDATE orders SET status = ? WHERE id = ?')->execute([$status, $id]);
+    $stmt = $pdo->prepare('CALL sp_update_order_status(?, ?)');
+    $stmt->execute([$id, $status]);
+    $result = $stmt->fetch();
+    if (!$result || empty($result['success'])) json_error($result['message'] ?? 'Update failed.', 404);
     json_response(['data' => ['updated' => true]]);
 }
 

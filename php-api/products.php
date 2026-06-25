@@ -34,7 +34,7 @@ if ($method === 'GET') {
         if ($featured !== '') { $where[] = 'featured = ?'; $params[] = (int)$featured; }
     }
 
-    $sql = 'SELECT * FROM products';
+    $sql = 'SELECT * FROM v_products_full';
     if ($where) $sql .= ' WHERE ' . implode(' AND ', $where);
 
     $sort = $_GET['sort'] ?? 'created_at_desc';

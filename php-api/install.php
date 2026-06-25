@@ -176,6 +176,24 @@ try {
         ->execute(['u-admin','ABYSS Admin','admin@abyss.com',$hash,'admin']);
     $steps[] = "✅ Admin user ready — email: admin@abyss.com / password: admin123";
 
+    // Create views and stored procedures
+    $vpFile = __DIR__ . '/../database/views_procedures.sql';
+    if (file_exists($vpFile)) {
+        $sql = file_get_contents($vpFile);
+        // Use the database; remove DELIMITER markers which are client-only syntax.
+        $sql = preg_replace('/^\s*USE\s+abyss\s*;\s*/mi', '', $sql);
+        $sql = preg_replace('/^\s*DELIMITER\s+(\/\/|;)\s*$/mi', '', $sql);
+        // Split by remaining // separators (between stored procedures) and execute each statement.
+        $chunks = array_filter(array_map('trim', explode('//', $sql)));
+        foreach ($chunks as $chunk) {
+            if ($chunk === '') continue;
+            $pdo->exec($chunk);
+        }
+        $steps[] = "✅ Database views and stored procedures created";
+    } else {
+        $steps[] = "⚠️ views_procedures.sql not found";
+    }
+
     $success = true;
 
 } catch (PDOException $e) {

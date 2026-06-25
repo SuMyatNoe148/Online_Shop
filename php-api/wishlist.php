@@ -13,9 +13,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 if ($method === 'GET') {
     $pdo  = get_pdo();
     $stmt = $pdo->prepare(
-        'SELECT p.*, w.created_at AS wishlisted_at
-         FROM wishlist w JOIN products p ON p.id = w.product_id
-         WHERE w.user_id = ? ORDER BY w.created_at DESC'
+        'SELECT * FROM v_wishlist_products WHERE user_id = ? ORDER BY wishlist_created_at DESC'
     );
     $stmt->execute([$userId]);
     $rows = $stmt->fetchAll();
@@ -29,16 +27,16 @@ if ($method === 'GET') {
     json_response(['data' => $rows]);
 }
 
-// POST /wishlist.php — add item
+// POST /wishlist.php — toggle item (add or remove)
 if ($method === 'POST') {
     $b = get_body();
     if (empty($b['productId'])) json_error('productId is required.');
     $pdo  = get_pdo();
-    $stmt = $pdo->prepare(
-        'INSERT IGNORE INTO wishlist (user_id, product_id) VALUES (?, ?)'
-    );
+    $stmt = $pdo->prepare('CALL sp_toggle_wishlist(?, ?)');
     $stmt->execute([$userId, $b['productId']]);
-    json_response(['data' => ['added' => true]], 201);
+    $result = $stmt->fetch();
+    $added = !empty($result['is_saved']);
+    json_response(['data' => ['added' => $added, 'message' => $result['message'] ?? '']], 201);
 }
 
 // DELETE /wishlist.php?productId=xxx
@@ -46,8 +44,8 @@ if ($method === 'DELETE') {
     $productId = $_GET['productId'] ?? '';
     if (!$productId) json_error('productId is required.');
     $pdo = get_pdo();
-    $pdo->prepare('DELETE FROM wishlist WHERE user_id = ? AND product_id = ?')
-        ->execute([$userId, $productId]);
+    $stmt = $pdo->prepare('CALL sp_toggle_wishlist(?, ?)');
+    $stmt->execute([$userId, $productId]);
     json_response(['data' => ['removed' => true]]);
 }
 

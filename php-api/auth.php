@@ -16,15 +16,15 @@ if ($method === 'POST' && $action === 'register') {
     if (strlen($b['password']) < 6) json_error('Password must be at least 6 characters.');
 
     $pdo  = get_pdo();
-    $stmt = $pdo->prepare('SELECT id FROM users WHERE email = ?');
-    $stmt->execute([strtolower($b['email'])]);
-    if ($stmt->fetch()) json_error('Email already registered.', 409);
-
     $id   = 'u-' . bin2hex(random_bytes(8));
     $hash = password_hash($b['password'], PASSWORD_BCRYPT);
-    $pdo->prepare(
-        'INSERT INTO users (id, name, email, password_hash, role) VALUES (?, ?, ?, ?, ?)'
-    )->execute([$id, $b['name'], strtolower($b['email']), $hash, 'customer']);
+
+    $stmt = $pdo->prepare('CALL sp_register_user(?, ?, ?, ?, ?)');
+    $stmt->execute([$id, $b['name'], strtolower($b['email']), $hash, 'customer']);
+    $result = $stmt->fetch();
+    if (!$result || empty($result['success'])) {
+        json_error($result['message'] ?? 'Registration failed.', 409);
+    }
 
     $_SESSION['user_id']   = $id;
     $_SESSION['user_name'] = $b['name'];
