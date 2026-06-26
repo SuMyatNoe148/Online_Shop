@@ -16,7 +16,7 @@ import { useAuth } from "@/store/authStore";
 export default function CartPage() {
   const { items, remove, setQuantity, clear } = useCart();
   const subtotal = useCart(selectSubtotal);
-  const currency = items[0]?.currency ?? "USD";
+  const currency = items[0]?.currency ?? "MMK";
   const user = useAuth((s) => s.user);
 
   const [form, setForm] = useState({

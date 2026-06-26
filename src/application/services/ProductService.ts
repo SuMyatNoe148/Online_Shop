@@ -42,7 +42,7 @@ export class ProductService {
       description: dto.description,
       category: dto.category,
       price: Math.round(dto.price * 100),
-      currency: dto.currency ?? "USD",
+      currency: dto.currency ?? "MMK",
       images: dto.images,
       sizes: dto.sizes,
       colors: dto.colors,

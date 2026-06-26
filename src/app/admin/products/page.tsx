@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Plus, Pencil, Trash2, X, ImagePlus } from "lucide-react";
 import { ProductDTO } from "@/application/dto/ProductDTO";
 import { CATEGORY_LIST, CATEGORY_LABELS } from "@/domain/shared/Category";
 
@@ -12,7 +12,7 @@ interface FormState {
   price: string;
   stock: string;
   description: string;
-  images: string;
+  images: string[];
   sizes: string;
   colors: string;
   featured: boolean;
@@ -24,7 +24,7 @@ const EMPTY: FormState = {
   price: "",
   stock: "",
   description: "",
-  images: "",
+  images: [],
   sizes: "S, M, L, XL",
   colors: "Black, White",
   featured: false,
@@ -36,6 +36,33 @@ export default function AdminProducts() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(EMPTY);
   const [error, setError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const onFilesPicked = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+    Promise.all(
+      files.map(
+        (file) =>
+          new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          }),
+      ),
+    ).then((dataUrls) => {
+      setForm((prev) => ({ ...prev, images: [...prev.images, ...dataUrls] }));
+    });
+    e.target.value = "";
+  };
+
+  const removeImage = (index: number) => {
+    setForm((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index),
+    }));
+  };
 
   const load = async () => {
     setLoading(true);
@@ -63,7 +90,7 @@ export default function AdminProducts() {
       price: String(p.price / 100),
       stock: String(p.stock),
       description: p.description,
-      images: p.images.join(", "),
+      images: p.images,
       sizes: p.sizes.join(", "),
       colors: p.colors.join(", "),
       featured: p.featured,
@@ -81,7 +108,7 @@ export default function AdminProducts() {
       price: parseFloat(form.price),
       stock: parseInt(form.stock, 10),
       description: form.description,
-      images: form.images.split(",").map((s) => s.trim()).filter(Boolean),
+      images: form.images,
       sizes: form.sizes.split(",").map((s) => s.trim()).filter(Boolean),
       colors: form.colors.split(",").map((s) => s.trim()).filter(Boolean),
       featured: form.featured,
@@ -216,7 +243,7 @@ export default function AdminProducts() {
                   </select>
                 </div>
                 <div className="col-md-3">
-                  <label className="ab-label">Price ($)</label>
+                  <label className="ab-label">Price (MMK)</label>
                   <input
                     className="ab-input"
                     type="number"
@@ -252,14 +279,64 @@ export default function AdminProducts() {
                   />
                 </div>
                 <div className="col-12">
-                  <label className="ab-label">Image URLs (comma separated)</label>
+                  <label className="ab-label">Product Photos</label>
                   <input
-                    className="ab-input"
-                    value={form.images}
-                    onChange={(e) =>
-                      setForm({ ...form, images: e.target.value })
-                    }
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    style={{ display: "none" }}
+                    onChange={onFilesPicked}
                   />
+                  <button
+                    type="button"
+                    className="ab-btn ab-btn--ghost ab-btn--block"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <ImagePlus size={18} /> Add Photos
+                  </button>
+                  <p className="ab-muted" style={{ fontSize: "0.78rem", margin: "0.4rem 0 0" }}>
+                    Choose one or more photos from your computer.
+                  </p>
+
+                  {form.images.length > 0 && (
+                    <div className="d-flex flex-wrap gap-2 mt-3">
+                      {form.images.map((src, i) => (
+                        <div
+                          key={i}
+                          style={{
+                            position: "relative",
+                            width: 80,
+                            height: 80,
+                            borderRadius: "var(--ab-radius-sm)",
+                            overflow: "hidden",
+                            border: "1px solid var(--ab-line)",
+                          }}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={src}
+                            alt={`Photo ${i + 1}`}
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(i)}
+                            aria-label="Remove photo"
+                            style={{
+                              position: "absolute", top: 2, right: 2,
+                              background: "rgba(0,0,0,0.65)", color: "#fff",
+                              border: "none", borderRadius: "50%",
+                              width: 22, height: 22, cursor: "pointer",
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                            }}
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="col-md-6">
                   <label className="ab-label">Sizes (comma separated)</label>

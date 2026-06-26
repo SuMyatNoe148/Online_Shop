@@ -35,7 +35,7 @@ if ($method === 'POST') {
 
     $pdo   = get_pdo();
     $total = 0;
-    $currency = 'USD';
+    $currency = 'MMK';
 
     // Enrich items with server-authoritative unitPrice and calculate total
     foreach ($b['items'] as &$item) {

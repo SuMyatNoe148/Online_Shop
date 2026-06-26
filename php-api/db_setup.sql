@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS products (
     description TEXT,
     category    ENUM('SHIRT','HOODIE','TOP') NOT NULL,
     price       INT          NOT NULL,
-    currency    VARCHAR(8)   NOT NULL DEFAULT 'USD',
+    currency    VARCHAR(8)   NOT NULL DEFAULT 'MMK',
     images      JSON,
     sizes       JSON,
     colors      JSON,
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS orders (
     address         TEXT         NOT NULL,
     items           JSON         NOT NULL,
     total           INT          NOT NULL,
-    currency        VARCHAR(8)   NOT NULL DEFAULT 'USD',
+    currency        VARCHAR(8)   NOT NULL DEFAULT 'MMK',
     status          ENUM('pending','processing','shipped','delivered','cancelled') NOT NULL DEFAULT 'pending',
     created_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -62,12 +62,12 @@ CREATE TABLE IF NOT EXISTS wishlist (
 
 -- Seed products
 INSERT IGNORE INTO products VALUES
-('p-shirt-eclipse','eclipse-oxford-shirt','Eclipse Oxford Shirt','A tailored oxford shirt cut from breathable cotton with a structured collar and mother-of-pearl buttons.','SHIRT',6900,'USD','["https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=900&h=1200&q=80"]','["S","M","L","XL"]','["Black","White","Stone"]',42,1,NOW()),
-('p-shirt-noir','noir-linen-shirt','Noir Linen Shirt','Relaxed linen shirt with a soft drape and a tonal chest pocket.','SHIRT',7400,'USD','["https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=900&h=1200&q=80"]','["S","M","L","XL","XXL"]','["Charcoal","Sand"]',30,0,NOW()),
-('p-hoodie-abyss','abyss-heavyweight-hoodie','Abyss Heavyweight Hoodie','450gsm brushed-back fleece with a double-layer hood and embroidered wordmark.','HOODIE',9900,'USD','["https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=900&h=1200&q=80"]','["S","M","L","XL","XXL"]','["Black","Bone","Slate"]',58,1,NOW()),
-('p-hoodie-fog','fog-zip-hoodie','Fog Full-Zip Hoodie','A clean full-zip in midweight loopback cotton with a YKK zipper.','HOODIE',8900,'USD','["https://images.unsplash.com/photo-1578768079052-aa76e52ff62e?auto=format&fit=crop&w=900&h=1200&q=80"]','["S","M","L","XL"]','["Fog Grey","Black"]',24,0,NOW()),
-('p-top-mono','mono-ribbed-top','Mono Ribbed Top','A second-skin ribbed top with a sculpted neckline and stretch recovery.','TOP',4200,'USD','["https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&h=1200&q=80"]','["XS","S","M","L"]','["Black","Ivory","Olive"]',70,1,NOW()),
-('p-top-mesh','mirage-mesh-top','Mirage Mesh Top','A breathable performance mesh top with flatlock seams and a cropped silhouette.','TOP',4800,'USD','["https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=900&h=1200&q=80"]','["XS","S","M","L","XL"]','["Black","White"]',36,0,NOW());
+('p-shirt-eclipse','eclipse-oxford-shirt','Eclipse Oxford Shirt','A tailored oxford shirt cut from breathable cotton with a structured collar and mother-of-pearl buttons.','SHIRT',6900,'MMK','["https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=900&h=1200&q=80"]','["S","M","L","XL"]','["Black","White","Stone"]',42,1,NOW()),
+('p-shirt-noir','noir-linen-shirt','Noir Linen Shirt','Relaxed linen shirt with a soft drape and a tonal chest pocket.','SHIRT',7400,'MMK','["https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=900&h=1200&q=80"]','["S","M","L","XL","XXL"]','["Charcoal","Sand"]',30,0,NOW()),
+('p-hoodie-abyss','abyss-heavyweight-hoodie','Abyss Heavyweight Hoodie','450gsm brushed-back fleece with a double-layer hood and embroidered wordmark.','HOODIE',9900,'MMK','["https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=900&h=1200&q=80"]','["S","M","L","XL","XXL"]','["Black","Bone","Slate"]',58,1,NOW()),
+('p-hoodie-fog','fog-zip-hoodie','Fog Full-Zip Hoodie','A clean full-zip in midweight loopback cotton with a YKK zipper.','HOODIE',8900,'MMK','["https://images.unsplash.com/photo-1578768079052-aa76e52ff62e?auto=format&fit=crop&w=900&h=1200&q=80"]','["S","M","L","XL"]','["Fog Grey","Black"]',24,0,NOW()),
+('p-top-mono','mono-ribbed-top','Mono Ribbed Top','A second-skin ribbed top with a sculpted neckline and stretch recovery.','TOP',4200,'MMK','["https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&h=1200&q=80"]','["XS","S","M","L"]','["Black","Ivory","Olive"]',70,1,NOW()),
+('p-top-mesh','mirage-mesh-top','Mirage Mesh Top','A breathable performance mesh top with flatlock seams and a cropped silhouette.','TOP',4800,'MMK','["https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=900&h=1200&q=80"]','["XS","S","M","L","XL"]','["Black","White"]',36,0,NOW());
 
 -- Seed models
 INSERT IGNORE INTO models VALUES

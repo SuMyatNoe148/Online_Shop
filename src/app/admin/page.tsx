@@ -28,7 +28,7 @@ export default async function AdminDashboard() {
     },
     {
       label: "Revenue",
-      value: formatMoney(revenue, orders[0]?.currency ?? "USD"),
+      value: formatMoney(revenue, orders[0]?.currency ?? "MMK"),
       icon: <DollarSign size={20} />,
     },
     {

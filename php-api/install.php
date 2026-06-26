@@ -54,7 +54,7 @@ try {
             description TEXT,
             category    ENUM('SHIRT','HOODIE','TOP') NOT NULL,
             price       INT          NOT NULL,
-            currency    VARCHAR(8)   NOT NULL DEFAULT 'USD',
+            currency    VARCHAR(8)   NOT NULL DEFAULT 'MMK',
             images      JSON,
             sizes       JSON,
             colors      JSON,
@@ -87,7 +87,7 @@ try {
             address         TEXT         NOT NULL,
             items           JSON         NOT NULL,
             total           INT          NOT NULL,
-            currency        VARCHAR(8)   NOT NULL DEFAULT 'USD',
+            currency        VARCHAR(8)   NOT NULL DEFAULT 'MMK',
             status          ENUM('pending','processing','shipped','delivered','cancelled') NOT NULL DEFAULT 'pending',
             created_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
         )
@@ -124,22 +124,22 @@ try {
         "https://images.unsplash.com/{$id}?auto=format&fit=crop&w={$w}&h={$h}&q=80";
 
     $products = [
-        ['p-shirt-eclipse','eclipse-oxford-shirt','Eclipse Oxford Shirt','A tailored oxford shirt cut from breathable cotton with a structured collar and mother-of-pearl buttons.','SHIRT',6900,'USD',
+        ['p-shirt-eclipse','eclipse-oxford-shirt','Eclipse Oxford Shirt','A tailored oxford shirt cut from breathable cotton with a structured collar and mother-of-pearl buttons.','SHIRT',6900,'MMK',
             [$img('photo-1596755094514-f87e34085b2c'),$img('photo-1603252109303-2751441dd157')],
             ['S','M','L','XL'],['Black','White','Stone'],42,1],
-        ['p-shirt-noir','noir-linen-shirt','Noir Linen Shirt','Relaxed linen shirt with a soft drape and a tonal chest pocket.','SHIRT',7400,'USD',
+        ['p-shirt-noir','noir-linen-shirt','Noir Linen Shirt','Relaxed linen shirt with a soft drape and a tonal chest pocket.','SHIRT',7400,'MMK',
             [$img('photo-1602810318383-e386cc2a3ccf'),$img('photo-1620012253295-c15cc3e65df4')],
             ['S','M','L','XL','XXL'],['Charcoal','Sand'],30,0],
-        ['p-hoodie-abyss','abyss-heavyweight-hoodie','Abyss Heavyweight Hoodie','450gsm brushed-back fleece with a double-layer hood and embroidered wordmark.','HOODIE',9900,'USD',
+        ['p-hoodie-abyss','abyss-heavyweight-hoodie','Abyss Heavyweight Hoodie','450gsm brushed-back fleece with a double-layer hood and embroidered wordmark.','HOODIE',9900,'MMK',
             [$img('photo-1556821840-3a63f95609a7'),$img('photo-1620799140408-edc6dcb6d633')],
             ['S','M','L','XL','XXL'],['Black','Bone','Slate'],58,1],
-        ['p-hoodie-fog','fog-zip-hoodie','Fog Full-Zip Hoodie','A clean full-zip in midweight loopback cotton with a YKK zipper.','HOODIE',8900,'USD',
+        ['p-hoodie-fog','fog-zip-hoodie','Fog Full-Zip Hoodie','A clean full-zip in midweight loopback cotton with a YKK zipper.','HOODIE',8900,'MMK',
             [$img('photo-1578768079052-aa76e52ff62e'),$img('photo-1614975059251-992f11792b9f')],
             ['S','M','L','XL'],['Fog Grey','Black'],24,0],
-        ['p-top-mono','mono-ribbed-top','Mono Ribbed Top','A second-skin ribbed top with a sculpted neckline and stretch recovery.','TOP',4200,'USD',
+        ['p-top-mono','mono-ribbed-top','Mono Ribbed Top','A second-skin ribbed top with a sculpted neckline and stretch recovery.','TOP',4200,'MMK',
             [$img('photo-1521572163474-6864f9cf17ab'),$img('photo-1581655353564-df123a1eb820')],
             ['XS','S','M','L'],['Black','Ivory','Olive'],70,1],
-        ['p-top-mesh','mirage-mesh-top','Mirage Mesh Top','A breathable performance mesh top with flatlock seams and a cropped silhouette.','TOP',4800,'USD',
+        ['p-top-mesh','mirage-mesh-top','Mirage Mesh Top','A breathable performance mesh top with flatlock seams and a cropped silhouette.','TOP',4800,'MMK',
             [$img('photo-1503342217505-b0a15ec3261c'),$img('photo-1485518882345-15568b007407')],
             ['XS','S','M','L','XL'],['Black','White'],36,0],
     ];

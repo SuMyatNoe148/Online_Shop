@@ -31,7 +31,7 @@ export class OrderService {
     }
 
     const items: OrderItemProps[] = [];
-    let currency = "USD";
+    let currency = "MMK";
 
     for (const line of dto.items) {
       const product = await this.products.findById(line.productId);

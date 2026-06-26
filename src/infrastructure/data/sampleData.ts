@@ -18,7 +18,7 @@ export const SAMPLE_PRODUCTS: ProductProps[] = [
       "A tailored oxford shirt cut from breathable cotton with a structured collar and mother-of-pearl buttons. Designed to move between the office and the night.",
     category: Category.SHIRT,
     price: 6900,
-    currency: "USD",
+    currency: "MMK",
     images: [
       img("photo-1596755094514-f87e34085b2c"),
       img("photo-1603252109303-2751441dd157"),
@@ -37,7 +37,7 @@ export const SAMPLE_PRODUCTS: ProductProps[] = [
       "Relaxed linen shirt with a soft drape and a tonal chest pocket. Light enough for summer, refined enough for everything else.",
     category: Category.SHIRT,
     price: 7400,
-    currency: "USD",
+    currency: "MMK",
     images: [
       img("photo-1602810318383-e386cc2a3ccf"),
       img("photo-1620012253295-c15cc3e65df4"),
@@ -56,7 +56,7 @@ export const SAMPLE_PRODUCTS: ProductProps[] = [
       "450gsm brushed-back fleece with a double-layer hood, embroidered wordmark, and a boxy modern fit. The signature ABYSS staple.",
     category: Category.HOODIE,
     price: 9900,
-    currency: "USD",
+    currency: "MMK",
     images: [
       img("photo-1556821840-3a63f95609a7"),
       img("photo-1620799140408-edc6dcb6d633"),
@@ -75,7 +75,7 @@ export const SAMPLE_PRODUCTS: ProductProps[] = [
       "A clean full-zip in midweight loopback cotton with a YKK zipper and ribbed cuffs. Layer it under everything.",
     category: Category.HOODIE,
     price: 8900,
-    currency: "USD",
+    currency: "MMK",
     images: [
       img("photo-1578768079052-aa76e52ff62e"),
       img("photo-1614975059251-992f11792b9f"),
@@ -94,7 +94,7 @@ export const SAMPLE_PRODUCTS: ProductProps[] = [
       "A second-skin ribbed top with a sculpted neckline and stretch recovery that holds its shape wear after wear.",
     category: Category.TOP,
     price: 4200,
-    currency: "USD",
+    currency: "MMK",
     images: [
       img("photo-1521572163474-6864f9cf17ab"),
       img("photo-1581655353564-df123a1eb820"),
@@ -113,7 +113,7 @@ export const SAMPLE_PRODUCTS: ProductProps[] = [
       "A breathable performance mesh top with flatlock seams and a cropped silhouette — built for movement.",
     category: Category.TOP,
     price: 4800,
-    currency: "USD",
+    currency: "MMK",
     images: [
       img("photo-1503342217505-b0a15ec3261c"),
       img("photo-1485518882345-15568b007407"),

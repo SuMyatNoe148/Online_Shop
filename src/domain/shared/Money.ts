@@ -8,14 +8,14 @@ export class Money {
     public readonly currency: string,
   ) {}
 
-  static of(amount: number, currency = "USD"): Money {
+  static of(amount: number, currency = "MMK"): Money {
     if (!Number.isInteger(amount) || amount < 0) {
       throw new Error("Money.amount must be a non-negative integer (cents).");
     }
     return new Money(amount, currency);
   }
 
-  static fromMajor(value: number, currency = "USD"): Money {
+  static fromMajor(value: number, currency = "MMK"): Money {
     return Money.of(Math.round(value * 100), currency);
   }
 
@@ -33,6 +33,9 @@ export class Money {
   }
 
   format(locale = "en-US"): string {
+    if (this.currency === "MMK") {
+      return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(this.major)} MMK`;
+    }
     return new Intl.NumberFormat(locale, {
       style: "currency",
       currency: this.currency,

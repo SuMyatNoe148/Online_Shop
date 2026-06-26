@@ -75,7 +75,7 @@ if ($method === 'POST') {
     $stmt->execute([
         $b['id'], $b['slug'], $b['name'], $b['description'] ?? '',
         strtoupper($b['category']), (int)$b['price'],
-        $b['currency'] ?? 'USD',
+        $b['currency'] ?? 'MMK',
         json_encode($b['images']  ?? []),
         json_encode($b['sizes']   ?? []),
         json_encode($b['colors']  ?? []),

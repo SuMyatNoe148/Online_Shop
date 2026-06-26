@@ -13,7 +13,7 @@ import { formatMoney } from "@/lib/format";
 export default function CartDrawer() {
   const { items, isOpen, close, remove, setQuantity } = useCart();
   const subtotal = useCart(selectSubtotal);
-  const currency = items[0]?.currency ?? "USD";
+  const currency = items[0]?.currency ?? "MMK";
 
   return (
     <AnimatePresence>
