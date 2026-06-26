@@ -3,7 +3,6 @@ const PHP_API = process.env.NEXT_PUBLIC_PHP_API_URL ?? 'http://localhost/Abyss.N
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${PHP_API}${path}`, {
     ...init,
-    credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
   });
   const json = await res.json();
