@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Instagram, Twitter, Youtube } from "lucide-react";
+import { Instagram, Twitter, Youtube, Phone, MapPin, Mail } from "lucide-react";
 import NewsletterForm from "./NewsletterForm";
 
 export default function Footer() {
@@ -29,6 +29,24 @@ export default function Footer() {
           </div>
 
           <div className="col-lg-2 col-6">
+            <h5>Contact</h5>
+            <div className="d-flex flex-column gap-2" style={{ fontSize: "0.85rem" }}>
+              <span className="d-flex align-items-center gap-2">
+                <Phone size={15} className="text-gold" />
+                +95 9 123 456 789
+              </span>
+              <span className="d-flex align-items-center gap-2">
+                <Mail size={15} className="text-gold" />
+                support@abyss.com
+              </span>
+              <span className="d-flex align-items-start gap-2">
+                <MapPin size={15} className="text-gold mt-1" />
+                No. 123, Pyay Road,<br />San Chaung Township,<br />Yangon, Myanmar
+              </span>
+            </div>
+          </div>
+
+          <div className="col-lg-2 col-6">
             <h5>Shop</h5>
             <Link href="/shop?category=SHIRT">Shirts</Link>
             <Link href="/shop?category=HOODIE">Hoodies</Link>
@@ -36,15 +54,7 @@ export default function Footer() {
             <Link href="/shop">All Products</Link>
           </div>
 
-          <div className="col-lg-2 col-6">
-            <h5>Brand</h5>
-            <Link href="/models">Our Models</Link>
-            <Link href="#">About</Link>
-            <Link href="#">Sustainability</Link>
-            <Link href="#">Careers</Link>
-          </div>
-
-          <div className="col-lg-4 col-md-12">
+          <div className="col-lg-3 col-md-12">
             <h5>Newsletter</h5>
             <p className="ab-muted">Be first to access new drops.</p>
             <NewsletterForm />

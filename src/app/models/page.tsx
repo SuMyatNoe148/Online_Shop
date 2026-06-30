@@ -27,7 +27,7 @@ export default async function ModelsPage() {
             <div className="col-md-6 col-lg-4" key={m.id}>
               <div className="ab-model">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={m.photo} alt={m.name} />
+                <img src={m.photo} alt={m.name} loading="lazy" />
                 <div className="ab-model__info">
                   <span>{m.role}</span>
                   <div className="d-flex justify-content-between align-items-center">

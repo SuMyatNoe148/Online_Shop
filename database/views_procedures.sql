@@ -18,7 +18,7 @@ SELECT
     category,
     price,
     currency,
-    FORMAT(price / 100, 2) AS price_formatted,
+    FORMAT(price / 100, 0) AS price_formatted,
     images,
     sizes,
     colors,
@@ -37,7 +37,7 @@ SELECT
     items,
     total,
     currency,
-    FORMAT(total / 100, 2) AS total_formatted,
+    FORMAT(total / 100, 0) AS total_formatted,
     status,
     created_at,
     JSON_LENGTH(items) AS item_count

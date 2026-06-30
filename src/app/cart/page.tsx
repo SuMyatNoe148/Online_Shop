@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Trash2, CheckCircle2 } from "lucide-react";
+import { Trash2, CheckCircle2, X, RefreshCw, Smartphone } from "lucide-react";
 import toast from "react-hot-toast";
+import QRCode from "react-qr-code";
 import {
   useCart,
   cartKey,
@@ -12,6 +13,8 @@ import {
 import { formatMoney } from "@/lib/format";
 import { phpApi } from "@/lib/phpApi";
 import { useAuth } from "@/store/authStore";
+
+type PaymentStatus = "idle" | "creating" | "pending" | "success" | "failed" | "cancelled" | "error";
 
 export default function CartPage() {
   const { items, remove, setQuantity, clear } = useCart();
@@ -24,15 +27,61 @@ export default function CartPage() {
     email: "",
     address: "",
   });
-  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">(
-    "idle",
-  );
-  const [message, setMessage] = useState("");
+
+  // Pre-fill form when user is logged in
+  useEffect(() => {
+    if (user) {
+      setForm((prev) => ({
+        ...prev,
+        customerName: prev.customerName || user.name || "",
+        email: prev.email || user.email || "",
+      }));
+    }
+  }, [user]);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("idle");
   const [orderId, setOrderId] = useState("");
+  const [paymentData, setPaymentData] = useState<{
+    qr: string | null;
+    amount: number;
+    currency: string;
+    sandbox: boolean;
+  } | null>(null);
+  const [message, setMessage] = useState("");
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const startPolling = (oid: string) => {
+    if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    pollIntervalRef.current = setInterval(async () => {
+      try {
+        const status = await phpApi.getPaymentStatus(oid) as { status: string };
+        if (status.status === "SUCCESS") {
+          setPaymentStatus("success");
+          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+          clear();
+        } else if (status.status === "FAILED" || status.status === "EXPIRED") {
+          setPaymentStatus("failed");
+          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+        }
+      } catch {
+        // ignore polling errors
+      }
+    }, 2500);
+  };
+
+  const cancelPayment = async () => {
+    if (!orderId) return;
+    try {
+      await phpApi.cancelPayment(orderId);
+      setPaymentStatus("cancelled");
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    } catch (err) {
+      toast.error("Failed to cancel payment");
+    }
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus("loading");
+    setPaymentStatus("creating");
     setMessage("");
     try {
       const order = await phpApi.createOrder({
@@ -45,29 +94,91 @@ export default function CartPage() {
         })),
       }) as { id: string };
       setOrderId(order.id);
-      setStatus("done");
-      clear();
+
+      const payment = await phpApi.createPayment(order.id);
+      setPaymentData({
+        qr: payment.qr,
+        amount: payment.amount,
+        currency: payment.currency,
+        sandbox: payment.sandbox,
+      });
+      setPaymentStatus("pending");
+      startPolling(order.id);
     } catch (err) {
       const msg = (err as Error).message;
-      setStatus("error");
+      setPaymentStatus("error");
       setMessage(msg);
       toast.error(msg);
     }
   };
 
-  if (status === "done") {
+  useEffect(() => {
+    return () => {
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    };
+  }, []);
+
+  if (paymentStatus === "success") {
     return (
       <section className="section">
         <div className="ab-container text-center" style={{ maxWidth: 560 }}>
           <CheckCircle2 size={56} className="text-gold mb-3" />
-          <h1 style={{ fontSize: "2.4rem" }}>Order Confirmed</h1>
+          <h1 style={{ fontSize: "2.4rem" }}>Payment Successful</h1>
           <p className="ab-muted">
             Thank you for shopping ABYSS. Your order reference is{" "}
             <span className="text-gold">{orderId}</span>.
           </p>
-          <Link href="/shop" className="ab-btn ab-btn--gold mt-3">
-            Continue Shopping
+          <Link href="/profile#orders" className="ab-btn ab-btn--gold mt-3">
+            View My Orders
           </Link>
+        </div>
+      </section>
+    );
+  }
+
+  if (paymentStatus === "failed") {
+    return (
+      <section className="section">
+        <div className="ab-container text-center" style={{ maxWidth: 560 }}>
+          <X size={56} className="ab-danger mb-3" />
+          <h1 style={{ fontSize: "2.4rem" }}>Payment Failed</h1>
+          <p className="ab-muted">
+            The payment could not be completed. Please try again or contact support.
+          </p>
+          <button
+            className="ab-btn ab-btn--gold mt-3"
+            onClick={() => {
+              setPaymentStatus("idle");
+              setOrderId("");
+              setPaymentData(null);
+            }}
+          >
+            Try Again
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  if (paymentStatus === "cancelled") {
+    return (
+      <section className="section">
+        <div className="ab-container text-center" style={{ maxWidth: 560 }}>
+          <X size={56} className="ab-muted mb-3" />
+          <h1 style={{ fontSize: "2.4rem" }}>Payment Cancelled</h1>
+          <p className="ab-muted">
+            You cancelled the payment. Your order is still pending.
+          </p>
+          <button
+            className="ab-btn ab-btn--gold mt-3"
+            onClick={() => {
+              setPaymentStatus("idle");
+              setOrderId("");
+              setPaymentData(null);
+            }}
+          >
+            Try Again
+          </button>
         </div>
       </section>
     );
@@ -145,7 +256,7 @@ export default function CartPage() {
                 </div>
                 <div className="d-flex justify-content-between mb-3 ab-muted">
                   <span>Shipping</span>
-                  <span>{subtotal >= 15000 ? "Free" : formatMoney(1200, currency)}</span>
+                  <span>{subtotal >= 5000000 ? "Free" : formatMoney(500000, currency)}</span>
                 </div>
                 <hr style={{ borderColor: "var(--ab-line)" }} />
 
@@ -167,6 +278,67 @@ export default function CartPage() {
                     <span className="ab-muted" style={{ display: "block", fontSize: "0.78rem", marginTop: "0.5rem" }}>
                       No account? <Link href="/register" style={{ color: "var(--ab-gold)" }}>Register free</Link>
                     </span>
+                  </div>
+                )}
+
+                {paymentStatus === "pending" && paymentData && (
+                  <div style={{
+                    position: "fixed",
+                    inset: 0,
+                    background: "rgba(0,0,0,0.7)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 1000,
+                    padding: "1rem",
+                  }}>
+                    <div style={{
+                      background: "var(--ab-surface)",
+                      border: "1px solid var(--ab-gold)",
+                      borderRadius: "var(--ab-radius-md)",
+                      padding: "2rem",
+                      maxWidth: 400,
+                      width: "100%",
+                      textAlign: "center",
+                    }}>
+                      <div className="d-flex align-items-center justify-content-center gap-2 mb-3">
+                        <Smartphone size={22} className="text-gold" />
+                        <span style={{ fontSize: "1.1rem", fontWeight: 600 }}>Scan to Pay</span>
+                      </div>
+                      <div style={{
+                        background: "#fff",
+                        padding: "1.5rem",
+                        borderRadius: "var(--ab-radius-sm)",
+                        display: "inline-block",
+                        marginBottom: "1rem",
+                      }}>
+                        {paymentData.qr && <QRCode value={paymentData.qr} size={200} />}
+                      </div>
+                      <p className="ab-muted" style={{ fontSize: "1rem", marginBottom: "0.5rem", fontWeight: 500 }}>
+                        {formatMoney(paymentData.amount, paymentData.currency)}
+                      </p>
+                      {paymentData.sandbox && (
+                        <p className="ab-muted" style={{ fontSize: "0.8rem", color: "var(--ab-gold)", marginBottom: "1.5rem" }}>
+                          Sandbox mode: auto-confirms in 8 seconds
+                        </p>
+                      )}
+                      <div className="d-flex gap-2 justify-content-center">
+                        <button
+                          type="button"
+                          className="ab-btn ab-btn--ghost"
+                          onClick={cancelPayment}
+                        >
+                          Cancel Payment
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {paymentStatus === "creating" && (
+                  <div className="mt-3 text-center py-3">
+                    <RefreshCw size={24} className="spin text-gold" />
+                    <p className="ab-muted mt-2" style={{ fontSize: "0.88rem" }}>Creating payment…</p>
                   </div>
                 )}
 
@@ -207,16 +379,18 @@ export default function CartPage() {
                     />
                   </div>
 
-                  {status === "error" && (
+                  {paymentStatus === "error" && (
                     <p style={{ color: "var(--ab-danger)" }}>{message}</p>
                   )}
 
                   <button
                     className="ab-btn ab-btn--gold ab-btn--block"
-                    disabled={status === "loading" || !user}
+                    disabled={paymentStatus === "creating" || paymentStatus === "pending" || !user}
                   >
-                    {status === "loading"
-                      ? "Placing Order…"
+                    {paymentStatus === "creating"
+                      ? "Creating Payment…"
+                      : paymentStatus === "pending"
+                      ? "Payment Pending"
                       : `Place Order · ${formatMoney(subtotal, currency)}`}
                   </button>
                 </form>

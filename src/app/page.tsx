@@ -9,6 +9,16 @@ import Marquee from "@/presentation/components/ui/Marquee";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  title: "ABYSS — Premium Streetwear & Fashion",
+  description: "Discover ABYSS, a premium streetwear brand. Shop hoodies, shirts, tops and more. Free shipping over 50,000 MMK. Secure checkout via MMPay.",
+  openGraph: {
+    title: "ABYSS — Premium Streetwear & Fashion",
+    description: "Discover ABYSS, a premium streetwear brand. Shop hoodies, shirts, tops and more.",
+    type: "website",
+  },
+};
+
 const CATEGORIES = [
   {
     key: "SHIRT",
@@ -93,7 +103,7 @@ export default async function HomePage() {
                     className="ab-cat"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={c.img} alt={c.label} />
+                    <img src={c.img} alt={c.label} loading="lazy" />
                     <div className="ab-cat__label">
                       <h3>{c.label}</h3>
                       <ArrowRight size={22} />
@@ -152,7 +162,7 @@ export default async function HomePage() {
                 <Reveal delay={i * 0.08}>
                   <div className="ab-model">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={m.photo} alt={m.name} />
+                    <img src={m.photo} alt={m.name} loading="lazy" />
                     <div className="ab-model__info">
                       <span>{m.role}</span>
                       <h4>{m.name}</h4>
@@ -175,7 +185,7 @@ export default async function HomePage() {
             </h2>
             <p className="ab-muted mx-auto" style={{ maxWidth: 520 }}>
               Early access to drops, members-only pricing, and free shipping on
-              orders over $150.
+              orders over 50,000 MMK.
             </p>
             <Link href="/shop" className="ab-btn ab-btn--gold mt-3">
               Start Shopping <ArrowRight size={18} />

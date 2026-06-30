@@ -1,12 +1,10 @@
 <?php
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/lib/Auth.php';
 cors();
 
-session_start();
-
-if (empty($_SESSION['user_id'])) json_error('Not authenticated.', 401);
-
-$userId = $_SESSION['user_id'];
+$user = require_auth();
+$userId = $user['sub'];
 $method = $_SERVER['REQUEST_METHOD'];
 
 // GET /wishlist.php — list user's wishlist

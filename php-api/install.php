@@ -5,6 +5,13 @@
  * Delete this file after first run for security.
  */
 
+// Security lock: if .install.lock exists, refuse to run.
+$lockFile = __DIR__ . '/.install.lock';
+if (is_file($lockFile)) {
+    http_response_code(403);
+    die('Installer locked. Delete <code>.install.lock</code> in php-api/ to re-run, or better: delete <code>install.php</code> entirely.');
+}
+
 $host    = 'localhost';
 $user    = 'root';
 $dbName  = 'abyss';
@@ -119,27 +126,36 @@ try {
     ");
     $steps[] = "✅ Table 'wishlist' ready";
 
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS subscribers (
+            id          INT AUTO_INCREMENT PRIMARY KEY,
+            email       VARCHAR(255) UNIQUE NOT NULL,
+            created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    ");
+    $steps[] = "✅ Table 'subscribers' ready";
+
     // Seed products
     $img = fn($id, $w = 900, $h = 1200) =>
         "https://images.unsplash.com/{$id}?auto=format&fit=crop&w={$w}&h={$h}&q=80";
 
     $products = [
-        ['p-shirt-eclipse','eclipse-oxford-shirt','Eclipse Oxford Shirt','A tailored oxford shirt cut from breathable cotton with a structured collar and mother-of-pearl buttons.','SHIRT',6900,'MMK',
+        ['p-shirt-eclipse','eclipse-oxford-shirt','Eclipse Oxford Shirt','A tailored oxford shirt cut from breathable cotton with a structured collar and mother-of-pearl buttons.','SHIRT',2500000,'MMK',
             [$img('photo-1596755094514-f87e34085b2c'),$img('photo-1603252109303-2751441dd157')],
             ['S','M','L','XL'],['Black','White','Stone'],42,1],
-        ['p-shirt-noir','noir-linen-shirt','Noir Linen Shirt','Relaxed linen shirt with a soft drape and a tonal chest pocket.','SHIRT',7400,'MMK',
+        ['p-shirt-noir','noir-linen-shirt','Noir Linen Shirt','Relaxed linen shirt with a soft drape and a tonal chest pocket.','SHIRT',2800000,'MMK',
             [$img('photo-1602810318383-e386cc2a3ccf'),$img('photo-1620012253295-c15cc3e65df4')],
             ['S','M','L','XL','XXL'],['Charcoal','Sand'],30,0],
-        ['p-hoodie-abyss','abyss-heavyweight-hoodie','Abyss Heavyweight Hoodie','450gsm brushed-back fleece with a double-layer hood and embroidered wordmark.','HOODIE',9900,'MMK',
+        ['p-hoodie-abyss','abyss-heavyweight-hoodie','Abyss Heavyweight Hoodie','450gsm brushed-back fleece with a double-layer hood and embroidered wordmark.','HOODIE',3500000,'MMK',
             [$img('photo-1556821840-3a63f95609a7'),$img('photo-1620799140408-edc6dcb6d633')],
             ['S','M','L','XL','XXL'],['Black','Bone','Slate'],58,1],
-        ['p-hoodie-fog','fog-zip-hoodie','Fog Full-Zip Hoodie','A clean full-zip in midweight loopback cotton with a YKK zipper.','HOODIE',8900,'MMK',
+        ['p-hoodie-fog','fog-zip-hoodie','Fog Full-Zip Hoodie','A clean full-zip in midweight loopback cotton with a YKK zipper.','HOODIE',3200000,'MMK',
             [$img('photo-1578768079052-aa76e52ff62e'),$img('photo-1614975059251-992f11792b9f')],
             ['S','M','L','XL'],['Fog Grey','Black'],24,0],
-        ['p-top-mono','mono-ribbed-top','Mono Ribbed Top','A second-skin ribbed top with a sculpted neckline and stretch recovery.','TOP',4200,'MMK',
+        ['p-top-mono','mono-ribbed-top','Mono Ribbed Top','A second-skin ribbed top with a sculpted neckline and stretch recovery.','TOP',1500000,'MMK',
             [$img('photo-1521572163474-6864f9cf17ab'),$img('photo-1581655353564-df123a1eb820')],
             ['XS','S','M','L'],['Black','Ivory','Olive'],70,1],
-        ['p-top-mesh','mirage-mesh-top','Mirage Mesh Top','A breathable performance mesh top with flatlock seams and a cropped silhouette.','TOP',4800,'MMK',
+        ['p-top-mesh','mirage-mesh-top','Mirage Mesh Top','A breathable performance mesh top with flatlock seams and a cropped silhouette.','TOP',1800000,'MMK',
             [$img('photo-1503342217505-b0a15ec3261c'),$img('photo-1485518882345-15568b007407')],
             ['XS','S','M','L','XL'],['Black','White'],36,0],
     ];
@@ -235,12 +251,13 @@ try {
   <?php endforeach; ?>
 
   <?php if ($success): ?>
+  <?php @file_put_contents($lockFile, date('c')); ?>
   <div class="ok">
     <h2>🎉 Installation complete!</h2>
     <div class="cred">Admin login<br>Email: admin@abyss.com<br>Password: admin123</div>
     <div class="cred">PHP API base<br>http://localhost/Abyss.Net/php-api/</div>
     <a href="http://localhost:3000" class="btn">Open ABYSS Storefront →</a>
-    <div class="warn">⚠️ Delete <strong>install.php</strong> after setup for security.</div>
+    <div class="warn">⚠️ Installer locked. Delete <strong>install.php</strong> for production security.</div>
   </div>
   <?php else: ?>
   <div class="ok">

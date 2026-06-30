@@ -1,19 +1,105 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Package, ShoppingCart, DollarSign, AlertTriangle } from "lucide-react";
-import { ProductController } from "@/presentation/controllers/ProductController";
-import { OrderController } from "@/presentation/controllers/OrderController";
+import { Package, ShoppingCart, Banknote, AlertTriangle, Users } from "lucide-react";
+import { phpApi } from "@/lib/phpApi";
 import { formatMoney } from "@/lib/format";
+import { useAuth } from "@/store/authStore";
+import { ProductDTO } from "@/application/dto/ProductDTO";
+import { OrderDTO } from "@/application/dto/OrderDTO";
 
-export const dynamic = "force-dynamic";
+export default function AdminDashboard() {
+  const router = useRouter();
+  const logout = useAuth((s) => s.logout);
+  const [products, setProducts] = useState<ProductDTO[]>([]);
+  const [orders, setOrders] = useState<OrderDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-export default async function AdminDashboard() {
-  const [products, orders] = await Promise.all([
-    ProductController.index({}),
-    OrderController.index(),
-  ]);
+  function normalizeOrder(raw: any): OrderDTO {
+    return {
+      id: raw.id ?? "",
+      customerName: raw.customer_name ?? raw.customerName ?? "",
+      email: raw.email ?? "",
+      address: raw.address ?? "",
+      total: raw.total ?? 0,
+      totalFormatted: raw.total_formatted ?? raw.totalFormatted ?? "",
+      currency: raw.currency ?? "MMK",
+      status: raw.status ?? "pending",
+      createdAt: raw.created_at ?? raw.createdAt ?? new Date().toISOString(),
+      items: (raw.items ?? []).map((it: any) => ({
+        productId: it.product_id ?? it.productId ?? "",
+        name: it.name ?? "",
+        size: it.size ?? "",
+        color: it.color ?? "",
+        quantity: it.quantity ?? 1,
+        unitPrice: it.unit_price ?? it.unitPrice ?? 0,
+        unitPriceFormatted: it.unit_price_formatted ?? it.unitPriceFormatted ?? "",
+      })),
+    };
+  }
 
-  const revenue = orders.reduce((sum, o) => sum + o.total, 0);
+  useEffect(() => {
+    async function load() {
+      try {
+        const [p, o] = await Promise.all([
+          phpApi.getProducts(),
+          phpApi.getOrders(),
+        ]);
+        setProducts(p as ProductDTO[]);
+        setOrders((o as any[]).map(normalizeOrder));
+      } catch (err) {
+        const msg = (err as Error).message || "";
+        if (msg.includes("Authentication required") || msg.includes("Admin access required") || msg.includes("401")) {
+          logout();
+          router.replace("/login");
+          return;
+        }
+        setError(msg || "Failed to load dashboard data.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [router, logout]);
+
+  if (loading) {
+    return (
+      <div>
+        <div className="mb-4">
+          <span className="ab-eyebrow">Overview</span>
+          <h1 style={{ fontSize: "2rem", margin: "0.3rem 0 0" }}>Dashboard</h1>
+        </div>
+        <p className="ab-muted">Loading...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div>
+        <div className="mb-4">
+          <span className="ab-eyebrow">Overview</span>
+          <h1 style={{ fontSize: "2rem", margin: "0.3rem 0 0" }}>Dashboard</h1>
+        </div>
+        <p style={{ color: "var(--ab-danger)" }}>{error}</p>
+      </div>
+    );
+  }
+
+  const activeOrders = orders.filter((o) => o.status !== "cancelled");
+  const revenue = activeOrders.reduce((sum, o) => sum + o.total, 0);
   const lowStock = products.filter((p) => p.stock < 25);
+
+  const statusColor: Record<string, string> = {
+    pending: "var(--ab-gold)",
+    processing: "var(--ab-aqua)",
+    shipped: "#7aa2f7",
+    delivered: "#8bd450",
+    cancelled: "var(--ab-danger)",
+  };
 
   const stats = [
     {
@@ -28,8 +114,8 @@ export default async function AdminDashboard() {
     },
     {
       label: "Revenue",
-      value: formatMoney(revenue, orders[0]?.currency ?? "MMK"),
-      icon: <DollarSign size={20} />,
+      value: formatMoney(revenue, activeOrders[0]?.currency ?? "MMK"),
+      icon: <Banknote size={20} />,
     },
     {
       label: "Low Stock",
@@ -45,9 +131,14 @@ export default async function AdminDashboard() {
           <span className="ab-eyebrow">Overview</span>
           <h1 style={{ fontSize: "2rem", margin: "0.3rem 0 0" }}>Dashboard</h1>
         </div>
-        <Link href="/admin/products" className="ab-btn ab-btn--gold">
-          Manage Products
-        </Link>
+        <div className="d-flex gap-2">
+          <Link href="/admin/users" className="ab-btn ab-btn--ghost">
+            <Users size={18} /> Users
+          </Link>
+          <Link href="/admin/products" className="ab-btn ab-btn--gold">
+            Manage Products
+          </Link>
+        </div>
       </div>
 
       <div className="row g-3 mb-4">
@@ -89,7 +180,12 @@ export default async function AdminDashboard() {
                       <td>{o.items.length}</td>
                       <td className="text-gold">{o.totalFormatted}</td>
                       <td>
-                        <span className="ab-pill">{o.status}</span>
+                        <span
+                          className="ab-pill"
+                          style={{ color: statusColor[o.status] ?? "var(--ab-paper)" }}
+                        >
+                          {o.status}
+                        </span>
                       </td>
                     </tr>
                   ))}

@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Shirt, ClipboardList, ExternalLink } from "lucide-react";
+import { LayoutDashboard, Shirt, ClipboardList, Users, ExternalLink } from "lucide-react";
 
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/products", label: "Products", icon: Shirt },
   { href: "/admin/orders", label: "Orders", icon: ClipboardList },
+  { href: "/admin/users", label: "Users", icon: Users },
 ];
 
 export default function AdminSidebar() {

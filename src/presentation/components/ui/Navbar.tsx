@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ShoppingBag, Search, Menu, Heart, User, X } from "lucide-react";
+import { ShoppingBag, Search, Menu, Heart, User, X, UserCircle, Package, LogOut, LayoutDashboard } from "lucide-react";
 import { useCart, selectCount } from "@/store/cartStore";
 import { useWishlist } from "@/store/wishlistStore";
 import { useAuth } from "@/store/authStore";
@@ -29,8 +29,10 @@ export default function Navbar() {
   const [mounted,  setMounted] = useState(false);
   const [search,   setSearch]  = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [userMenu, setUserMenu] = useState(false);
   const [query,    setQuery]   = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -57,6 +59,18 @@ export default function Navbar() {
     else document.body.style.overflow = "";
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+
+  useEffect(() => { setUserMenu(false); }, [pathname]);
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,7 +118,7 @@ export default function Navbar() {
               <Search size={20} strokeWidth={1.6} />
             </button>
 
-            {mounted && (
+            {mounted && user && user.role !== "admin" && (
               <Link href="/wishlist" className="ab-icon-btn" aria-label="Wishlist" style={{ position: "relative" }}>
                 <Heart size={20} strokeWidth={1.6} />
                 {wishCount > 0 && <span className="ab-badge">{wishCount}</span>}
@@ -112,29 +126,77 @@ export default function Navbar() {
             )}
 
             {mounted && user ? (
-              <>
-                <span className="ab-muted d-none d-md-inline" style={{ fontSize: "0.8rem" }}>
-                  {user.name.split(" ")[0]}
-                </span>
-                <button className="ab-icon-btn" onClick={handleLogout} aria-label="Logout" title="Logout">
+              <div ref={userMenuRef} style={{ position: "relative" }}>
+                <button
+                  className="ab-icon-btn"
+                  onClick={() => setUserMenu((o) => !o)}
+                  aria-label="Account menu"
+                  aria-expanded={userMenu}
+                  title={user.name}
+                >
                   <User size={20} strokeWidth={1.6} />
                 </button>
-              </>
+                {userMenu && (
+                  <div
+                    style={{
+                      position: "absolute", top: "calc(100% + 0.6rem)", right: 0,
+                      minWidth: 200, zIndex: 120,
+                      background: "var(--ab-surface)",
+                      border: "1px solid var(--ab-line-strong)",
+                      borderRadius: "var(--ab-radius-sm)",
+                      boxShadow: "0 12px 40px rgba(0,0,0,0.45)",
+                      padding: "0.5rem",
+                    }}
+                  >
+                    <div style={{ padding: "0.5rem 0.7rem", borderBottom: "1px solid var(--ab-line)" }}>
+                      <div style={{ fontSize: "0.9rem", fontWeight: 600 }}>{user.name}</div>
+                      <div className="ab-muted" style={{ fontSize: "0.74rem", textTransform: "capitalize" }}>{user.role} account</div>
+                    </div>
+                    {user.role !== "admin" && (
+                      <>
+                        <Link href="/profile" className="ab-menu-item" onClick={() => setUserMenu(false)}>
+                          <UserCircle size={16} /> My Profile
+                        </Link>
+                        <Link href="/profile#orders" className="ab-menu-item" onClick={() => setUserMenu(false)}>
+                          <Package size={16} /> My Orders
+                        </Link>
+                        <Link href="/wishlist" className="ab-menu-item" onClick={() => setUserMenu(false)}>
+                          <Heart size={16} /> Wishlist
+                        </Link>
+                      </>
+                    )}
+                    {user.role === "admin" && (
+                      <Link href="/admin" className="ab-menu-item" onClick={() => setUserMenu(false)}>
+                        <LayoutDashboard size={16} /> Admin Dashboard
+                      </Link>
+                    )}
+                    <button
+                      className="ab-menu-item"
+                      onClick={() => { setUserMenu(false); handleLogout(); }}
+                      style={{ width: "100%", color: "var(--ab-danger)" }}
+                    >
+                      <LogOut size={16} /> Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <Link href="/login" className="ab-icon-btn" aria-label="Login">
                 <User size={20} strokeWidth={1.6} />
               </Link>
             )}
 
-            <button
-              className="ab-icon-btn"
-              onClick={openCart}
-              aria-label="Open cart"
-              style={{ position: "relative" }}
-            >
-              <ShoppingBag size={20} strokeWidth={1.6} />
-              {mounted && count > 0 && <span className="ab-badge">{count}</span>}
-            </button>
+            {user && user.role !== "admin" && (
+              <button
+                className="ab-icon-btn"
+                onClick={openCart}
+                aria-label="Open cart"
+                style={{ position: "relative" }}
+              >
+                <ShoppingBag size={20} strokeWidth={1.6} />
+                {mounted && count > 0 && <span className="ab-badge">{count}</span>}
+              </button>
+            )}
 
             <button
               className="ab-icon-btn d-md-none"
@@ -225,6 +287,15 @@ export default function Navbar() {
               {mounted && user ? (
                 <>
                   <span className="ab-muted" style={{ fontSize: "0.85rem" }}>Signed in as {user.name}</span>
+                  {user.role !== "admin" && (
+                    <Link href="/profile" className="ab-btn ab-btn--ghost" onClick={() => setMobileOpen(false)}>My Profile</Link>
+                  )}
+                  {user.role !== "admin" && (
+                    <Link href="/wishlist" className="ab-btn ab-btn--ghost" onClick={() => setMobileOpen(false)}>Wishlist</Link>
+                  )}
+                  {user.role === "admin" && (
+                    <Link href="/admin" className="ab-btn ab-btn--ghost" onClick={() => setMobileOpen(false)}>Admin Dashboard</Link>
+                  )}
                   <button className="ab-btn ab-btn--ghost" onClick={() => { handleLogout(); setMobileOpen(false); }}>
                     Sign Out
                   </button>

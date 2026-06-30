@@ -22,7 +22,7 @@ export default function BrandLoader() {
       }
       sessionStorage.setItem("abyss-intro", "1");
     }
-    const t = setTimeout(() => setDone(true), 2200);
+    const t = setTimeout(() => setDone(true), 1200);
     return () => clearTimeout(t);
   }, []);
 
@@ -104,7 +104,7 @@ export default function BrandLoader() {
               <motion.div
                 initial={{ width: "0%" }}
                 animate={{ width: "100%" }}
-                transition={{ duration: 1.9, ease: "easeInOut" }}
+                transition={{ duration: 1.0, ease: "easeInOut" }}
                 style={{
                   height: "100%",
                   background:

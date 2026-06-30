@@ -34,7 +34,7 @@ const SORT_OPTIONS = [
 export default async function ShopPage({
   searchParams,
 }: {
-  searchParams: { category?: string; search?: string; sort?: string };
+  searchParams: { category?: string; search?: string; sort?: string; page?: string };
 }) {
   const products = await ProductController.index({
     category: searchParams.category ?? null,
@@ -45,6 +45,13 @@ export default async function ShopPage({
   const active = searchParams.category ?? "";
   const sort   = searchParams.sort ?? "created_at_desc";
   const search = searchParams.search ?? "";
+
+  // Pagination
+  const PER_PAGE = 12;
+  const totalPages = Math.ceil(products.length / PER_PAGE);
+  const currentPage = Math.min(Math.max(parseInt(searchParams.page ?? "1", 10) || 1, 1), totalPages || 1);
+  const start = (currentPage - 1) * PER_PAGE;
+  const pagedProducts = products.slice(start, start + PER_PAGE);
 
   return (
     <section className="section">
@@ -77,6 +84,7 @@ export default async function ShopPage({
 
         <p className="ab-muted mb-3" style={{ fontSize: "0.82rem" }}>
           {products.length} product{products.length !== 1 ? "s" : ""}
+          {totalPages > 1 && ` · Page ${currentPage} of ${totalPages}`}
         </p>
 
         {products.length === 0 ? (
@@ -85,13 +93,38 @@ export default async function ShopPage({
             <Link href="/shop" className="ab-btn ab-btn--ghost mt-2">Clear filters</Link>
           </div>
         ) : (
-          <div className="row g-4">
-            {products.map((p) => (
-              <div className="col-6 col-lg-3" key={p.id}>
-                <ProductCard product={p} />
+          <>
+            <div className="row g-4">
+              {pagedProducts.map((p) => (
+                <div className="col-6 col-lg-3" key={p.id}>
+                  <ProductCard product={p} />
+                </div>
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="d-flex justify-content-center gap-2 mt-5">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => {
+                  const params = new URLSearchParams();
+                  if (active) params.set("category", active);
+                  if (search) params.set("search", search);
+                  if (sort !== "created_at_desc") params.set("sort", sort);
+                  if (pg > 1) params.set("page", String(pg));
+                  const qs = params.toString();
+                  return (
+                    <Link
+                      key={pg}
+                      href={`/shop${qs ? `?${qs}` : ""}`}
+                      className={`ab-chip ${pg === currentPage ? "ab-chip--active" : ""}`}
+                      style={{ minWidth: 40, justifyContent: "center" }}
+                    >
+                      {pg}
+                    </Link>
+                  );
+                })}
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
     </section>

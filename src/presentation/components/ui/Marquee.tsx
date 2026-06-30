@@ -5,7 +5,7 @@ const WORDS = [
   "HOODIES",
   "TOPS",
   "NEW DROP",
-  "FREE SHIPPING OVER $150",
+  "FREE SHIPPING OVER 15,000 MMK",
   "DEPTH IN DETAIL",
 ];
 

@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Plus, Pencil, Trash2, X, ImagePlus } from "lucide-react";
+import toast from "react-hot-toast";
 import { ProductDTO } from "@/application/dto/ProductDTO";
 import { CATEGORY_LIST, CATEGORY_LABELS } from "@/domain/shared/Category";
+import { phpApi } from "@/lib/phpApi";
 
 interface FormState {
   id?: string;
@@ -66,10 +68,14 @@ export default function AdminProducts() {
 
   const load = async () => {
     setLoading(true);
-    const res = await fetch("/api/products");
-    const json = await res.json();
-    setProducts(json.data ?? []);
-    setLoading(false);
+    try {
+      const data = await phpApi.getProducts() as ProductDTO[];
+      setProducts(data);
+    } catch {
+      toast.error("Failed to load products");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -105,34 +111,37 @@ export default function AdminProducts() {
     const payload = {
       name: form.name,
       category: form.category,
-      price: parseFloat(form.price),
-      stock: parseInt(form.stock, 10),
+      price: Math.round(parseFloat(form.price) * 100),
+      stock: parseInt(form.stock, 10) || 0,
       description: form.description,
       images: form.images,
       sizes: form.sizes.split(",").map((s) => s.trim()).filter(Boolean),
       colors: form.colors.split(",").map((s) => s.trim()).filter(Boolean),
       featured: form.featured,
     };
-    const url = form.id ? `/api/products/${form.id}` : "/api/products";
-    const method = form.id ? "PUT" : "POST";
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const json = await res.json();
-    if (!res.ok) {
-      setError(json.error || "Save failed");
-      return;
+    try {
+      if (form.id) {
+        await phpApi.updateProduct(form.id, payload);
+      } else {
+        const id = "p-" + Date.now().toString(36);
+        const slug = form.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+        await phpApi.createProduct({ id, slug, ...payload });
+      }
+      setOpen(false);
+      load();
+    } catch (err) {
+      setError((err as Error).message || "Save failed");
     }
-    setOpen(false);
-    load();
   };
 
   const remove = async (id: string) => {
     if (!confirm("Delete this product?")) return;
-    await fetch(`/api/products/${id}`, { method: "DELETE" });
-    load();
+    try {
+      await phpApi.deleteProduct(id);
+      load();
+    } catch {
+      toast.error("Failed to delete product");
+    }
   };
 
   return (

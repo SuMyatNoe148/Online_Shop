@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.scss";
-import Navbar from "@/presentation/components/ui/Navbar";
+import ConditionalNavbar from "@/presentation/components/ui/ConditionalNavbar";
+import ConditionalCartDrawer from "@/presentation/components/ui/ConditionalCartDrawer";
 import Footer from "@/presentation/components/ui/Footer";
-import CartDrawer from "@/presentation/components/ui/CartDrawer";
 import BrandLoader from "@/presentation/components/ui/BrandLoader";
 import ToasterProvider from "@/presentation/components/ui/ToasterProvider";
+import ErrorBoundary from "@/presentation/components/ui/ErrorBoundary";
+import SkipToContent from "@/presentation/components/ui/SkipToContent";
 
 export const metadata: Metadata = {
   title: {
@@ -41,11 +43,14 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <SkipToContent />
         <BrandLoader />
-        <Navbar />
-        <main>{children}</main>
+        <ConditionalNavbar />
+        <main id="main-content">
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </main>
         <Footer />
-        <CartDrawer />
+        <ConditionalCartDrawer />
         <ToasterProvider />
       </body>
     </html>

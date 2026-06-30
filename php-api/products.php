@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/lib/Auth.php';
 cors();
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -60,12 +61,30 @@ if ($method === 'GET') {
     json_response(['data' => ($id || $slug) ? ($rows[0] ?? null) : $rows]);
 }
 
-// POST /products.php  — create
+// POST /products.php  — create (admin only)
 if ($method === 'POST') {
+    require_admin();
     $b = get_body();
     $required = ['id','slug','name','category','price'];
     foreach ($required as $f) {
         if (empty($b[$f])) json_error("Field '$f' is required.");
+    }
+    // Validate price
+    if (!is_numeric($b['price']) || (int)$b['price'] < 0) {
+        json_error('Price must be a non-negative number.');
+    }
+    // Validate category
+    $validCategories = ['SHIRT','HOODIE','TOP','PANTS','ACCESSORY'];
+    if (!in_array(strtoupper($b['category']), $validCategories)) {
+        json_error('Invalid category. Must be one of: ' . implode(', ', $validCategories));
+    }
+    // Validate slug format
+    if (!preg_match('/^[a-z0-9-]+$/', $b['slug'])) {
+        json_error('Slug must contain only lowercase letters, numbers, and hyphens.');
+    }
+    // Validate stock
+    if (isset($b['stock']) && (!is_numeric($b['stock']) || (int)$b['stock'] < 0)) {
+        json_error('Stock must be a non-negative number.');
     }
     $pdo = get_pdo();
     $stmt = $pdo->prepare(
@@ -85,8 +104,9 @@ if ($method === 'POST') {
     json_response(['data' => ['id' => $b['id']]], 201);
 }
 
-// PATCH /products.php?id=xxx  — update
+// PATCH /products.php?id=xxx  — update (admin only)
 if ($method === 'PATCH' || $method === 'PUT') {
+    require_admin();
     if (!$id) json_error('id is required for update.');
     $b = get_body();
     $pdo = get_pdo();
@@ -105,8 +125,9 @@ if ($method === 'PATCH' || $method === 'PUT') {
     json_response(['data' => ['updated' => true]]);
 }
 
-// DELETE /products.php?id=xxx
+// DELETE /products.php?id=xxx  (admin only)
 if ($method === 'DELETE') {
+    require_admin();
     if (!$id) json_error('id is required.');
     $pdo = get_pdo();
     $pdo->prepare('DELETE FROM products WHERE id = ?')->execute([$id]);

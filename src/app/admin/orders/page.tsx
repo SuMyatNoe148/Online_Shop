@@ -8,6 +8,29 @@ import { phpApi } from "@/lib/phpApi";
 
 const STATUSES = Object.values(OrderStatus);
 
+function normalizeOrder(raw: any): OrderDTO {
+  return {
+    id: raw.id ?? "",
+    customerName: raw.customer_name ?? raw.customerName ?? "",
+    email: raw.email ?? "",
+    address: raw.address ?? "",
+    total: raw.total ?? 0,
+    totalFormatted: raw.total_formatted ?? raw.totalFormatted ?? "",
+    currency: raw.currency ?? "MMK",
+    status: raw.status ?? "pending",
+    createdAt: raw.created_at ?? raw.createdAt ?? new Date().toISOString(),
+    items: (raw.items ?? []).map((it: any) => ({
+      productId: it.product_id ?? it.productId ?? "",
+      name: it.name ?? "",
+      size: it.size ?? "",
+      color: it.color ?? "",
+      quantity: it.quantity ?? 1,
+      unitPrice: it.unit_price ?? it.unitPrice ?? 0,
+      unitPriceFormatted: it.unit_price_formatted ?? it.unitPriceFormatted ?? "",
+    })),
+  };
+}
+
 export default function AdminOrders() {
   const [orders, setOrders] = useState<OrderDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -16,8 +39,8 @@ export default function AdminOrders() {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await phpApi.getOrders() as OrderDTO[];
-      setOrders(data);
+      const data = await phpApi.getOrders() as any[];
+      setOrders(data.map(normalizeOrder));
     } catch {
       toast.error("Failed to load orders.");
     } finally {

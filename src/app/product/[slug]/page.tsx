@@ -5,6 +5,8 @@ import { ProductController } from "@/presentation/controllers/ProductController"
 import { CATEGORY_LABELS } from "@/domain/shared/Category";
 import ProductGallery from "@/presentation/components/product/ProductGallery";
 import AddToCart from "@/presentation/components/product/AddToCart";
+import ProductReviews from "@/presentation/components/product/ProductReviews";
+import ProductCard from "@/presentation/components/ui/ProductCard";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +16,25 @@ export async function generateMetadata({
   params: { slug: string };
 }) {
   const product = await ProductController.show(params.slug);
-  return { title: product?.name ?? "Product" };
+  if (!product) return { title: "Product Not Found" };
+  const description = product.description || `${product.name} — ABYSS`;
+  const image = product.images?.[0] ?? undefined;
+  return {
+    title: `${product.name} — ABYSS`,
+    description,
+    openGraph: {
+      title: `${product.name} — ABYSS`,
+      description,
+      images: image ? [{ url: image, alt: product.name }] : undefined,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.name} — ABYSS`,
+      description,
+      images: image ? [image] : undefined,
+    },
+  };
 }
 
 export default async function ProductPage({
@@ -24,6 +44,12 @@ export default async function ProductPage({
 }) {
   const product = await ProductController.show(params.slug);
   if (!product) notFound();
+
+  // Fetch related products (same category, exclude current)
+  const allProducts = await ProductController.index({
+    category: product.category,
+  });
+  const related = allProducts.filter((p) => p.id !== product.id).slice(0, 4);
 
   return (
     <section className="section">
@@ -54,11 +80,26 @@ export default async function ProductPage({
               {product.name}
             </h1>
             <div
-              className="text-gold mb-4"
+              className="text-gold mb-2"
               style={{ fontSize: "1.5rem", fontWeight: 600 }}
             >
               {product.priceFormatted}
             </div>
+            {product.stock > 0 ? (
+              <div className="mb-4" style={{ fontSize: "0.85rem" }}>
+                {product.stock <= 10 ? (
+                  <span style={{ color: "var(--ab-danger)" }}>
+                    Only {product.stock} left in stock
+                  </span>
+                ) : (
+                  <span style={{ color: "var(--ab-aqua)" }}>In stock</span>
+                )}
+              </div>
+            ) : (
+              <div className="mb-4" style={{ fontSize: "0.85rem", color: "var(--ab-danger)" }}>
+                Out of stock
+              </div>
+            )}
             <p className="ab-muted mb-4" style={{ lineHeight: 1.7 }}>
               {product.description}
             </p>
@@ -66,7 +107,7 @@ export default async function ProductPage({
             <AddToCart product={product} />
 
             <div className="row g-3 mt-4">
-              <Perk icon={<Truck size={20} />} text="Free shipping over $150" />
+              <Perk icon={<Truck size={20} />} text="Free shipping over 15,000 MMK" />
               <Perk icon={<RefreshCw size={20} />} text="30-day returns" />
               <Perk
                 icon={<ShieldCheck size={20} />}
@@ -75,6 +116,25 @@ export default async function ProductPage({
             </div>
           </div>
         </div>
+
+        {/* Reviews section */}
+        <div className="mt-5 pt-4" style={{ borderTop: "1px solid var(--ab-line)" }}>
+          <ProductReviews productId={product.id} />
+        </div>
+
+        {/* Related products */}
+        {related.length > 0 && (
+          <div className="mt-5 pt-4" style={{ borderTop: "1px solid var(--ab-line)" }}>
+            <h3 style={{ fontSize: "1.2rem", marginBottom: "1.5rem" }}>You might also like</h3>
+            <div className="row g-3">
+              {related.map((p) => (
+                <div className="col-6 col-lg-3" key={p.id}>
+                  <ProductCard product={p} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

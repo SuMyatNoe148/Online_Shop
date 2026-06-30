@@ -12,15 +12,17 @@ export default function RegisterPage() {
   const setUser = useAuth((s) => s.setUser);
   const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     if (form.password !== form.confirm) {
-      toast.error("Passwords do not match.");
+      setError("Passwords do not match.");
       return;
     }
     if (form.password.length < 6) {
-      toast.error("Password must be at least 6 characters.");
+      setError("Password must be at least 6 characters.");
       return;
     }
     setLoading(true);
@@ -34,7 +36,7 @@ export default function RegisterPage() {
       toast.success(`Account created! Welcome, ${user.name}.`);
       router.push("/shop");
     } catch (err) {
-      toast.error((err as Error).message);
+      setError((err as Error).message);
     } finally {
       setLoading(false);
     }
@@ -49,6 +51,20 @@ export default function RegisterPage() {
         <div className="ab-auth-card">
           <span className="ab-eyebrow">Join ABYSS</span>
           <h1 style={{ fontSize: "2rem", margin: "0.4rem 0 1.6rem" }}>Create Account</h1>
+
+          {error && (
+            <div style={{
+              background: "rgba(239, 100, 97, 0.15)",
+              border: "1px solid var(--ab-danger)",
+              borderRadius: "var(--ab-radius-sm)",
+              padding: "0.8rem 1rem",
+              marginBottom: "1.2rem",
+              color: "var(--ab-danger)",
+              fontSize: "0.9rem",
+            }}>
+              {error}
+            </div>
+          )}
 
           <form onSubmit={submit}>
             <div className="mb-3">
