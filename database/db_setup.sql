@@ -60,6 +60,12 @@ CREATE TABLE IF NOT EXISTS wishlist (
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS subscribers (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    email       VARCHAR(255) UNIQUE NOT NULL,
+    created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Seed products
 INSERT IGNORE INTO products VALUES
 ('p-shirt-eclipse','eclipse-oxford-shirt','Eclipse Oxford Shirt','A tailored oxford shirt cut from breathable cotton with a structured collar and mother-of-pearl buttons.','SHIRT',6900,'MMK','["https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=900&h=1200&q=80"]','["S","M","L","XL"]','["Black","White","Stone"]',42,1,NOW()),
@@ -77,4 +83,4 @@ INSERT IGNORE INTO models VALUES
 
 -- Default admin user (password: admin123)
 INSERT IGNORE INTO users (id, name, email, password_hash, role) VALUES
-('u-admin', 'ABYSS Admin', 'admin@abyss.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
+('u-admin', 'ABYSS Admin', 'admin@abyss.com', '$2y$10$Op7LZ2WAdYDDkXAb5gWTfePe/ZyX2gTBN97Q8/stVVkfZkoa3GrHq', 'admin');
